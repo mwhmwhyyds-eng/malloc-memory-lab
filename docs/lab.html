@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="malloc 内存旅程实验室：通过代码和可交互的内存状态图，理解申请、初始化、读取与释放。">
+  <title>内存旅程实验室 · malloc</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="model.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+<main>
+  <header class="masthead"><span><a href="index.html">← 项目首页</a>　嵌入式 Linux 系统 · 补充创意案例</span><a href="source/memory_journey.c" download="memory_journey.c">下载 C 源码 <span aria-hidden="true">↗</span></a></header>
+  <section class="intro">
+    <p class="eyebrow">MALLOC / MEMORY JOURNEY</p>
+    <h1>内存旅程实验室<span>一块空间，四个阶段。</span></h1>
+    <p class="lede">跟随四个整数，观察一次申请如何变成可用的数据，以及释放如何结束对象的使用。</p>
+  </section>
+  <nav class="journey" aria-label="旅程阶段">
+    <button data-jump="1"><span>01</span>申请空间</button>
+    <button data-jump="5"><span>02</span>写入数据</button>
+    <button data-jump="6"><span>03</span>读取元素</button>
+    <button data-jump="7"><span>04</span>释放对象</button>
+  </nav>
+  <section class="workbench" aria-label="代码与内存状态">
+    <div class="code-side">
+      <div class="section-label"><h2>C 代码</h2><span>主线片段</span></div>
+      <pre aria-label="malloc 示例代码"><code><span data-line="1"><i>1</i>int *p = malloc(4 * sizeof *p);</span><span data-line="2"><i>2</i>if (p == NULL)</span><span data-line="3"><i>3</i>    return EXIT_FAILURE;</span><span data-line="4"><i>4</i></span><span data-line="5"><i>5</i>for (int i = 0; i &lt; 4; ++i)</span><span data-line="6"><i>6</i>    p[i] = i + 1;</span><span data-line="7"><i>7</i></span><span data-line="8"><i>8</i>printf("%d\n", p[3]);</span><span data-line="9"><i>9</i>free(p);</span></code></pre>
+      <p class="code-caption">完整源码含头文件、main 和事件记录输出。</p>
+    </div>
+    <div class="memory-side">
+      <div class="section-label"><h2>内存状态</h2><span id="data-origin">教学演示</span></div>
+      <div class="scene-heading"><span id="phase-number">00 / 准备</span><h3 id="scene-title">从一个申请开始</h3></div>
+      <div class="memory-scene" id="memory-scene">
+        <div class="pointer"><span class="variable">p</span><span class="pointer-state" id="pointer-state">尚未赋值</span></div>
+        <div class="pointer-link" id="pointer-link" aria-hidden="true"><span>指向</span><b>⟶</b></div>
+        <div class="array-wrap"><div class="array" id="array" aria-label="四个 int 元素"></div><p id="allocation-label">4 × sizeof(int) 字节</p></div>
+      </div>
+      <div class="result"><span>程序输出</span><output id="program-output">—</output></div>
+      <p id="explanation" class="explanation" aria-live="polite"></p>
+      <p id="attempt" class="attempt" hidden>待判断的操作：<code id="attempt-code"></code></p>
+    </div>
+  </section>
+  <div class="playback"><div class="controls"><button id="previous" class="secondary">上一步</button><button id="next" class="primary">开始申请 <span aria-hidden="true">→</span></button><button id="reset" class="text-button">重新开始</button></div><span id="step-counter">0 / 7</span></div>
+  <section class="experiment" aria-labelledby="experiment-title">
+    <div class="experiment-intro"><p class="eyebrow">TRY / 试着判断</p><h2 id="experiment-title">如果操作顺序错了呢？</h2><p>选择一种情况，看看访问为什么不成立。</p></div>
+    <div class="experiment-options"><button data-fault="uninitialized">刚申请就读取</button><button data-fault="bounds">访问 p[4]</button><button data-fault="freed">释放后继续读取</button><button id="simulate-failure">申请失败时</button><button id="return-main" hidden>返回原来的步骤</button></div>
+    <p id="diagnostic" role="status">错误探索只展示原因，不实际执行有未定义行为的 C 代码。</p>
+  </section>
+  <details class="evidence"><summary>查看配套 C 程序与运行记录</summary><div><p>网页用 JavaScript 绘制教学示意，不调用系统 malloc，也不展示实际地址或 glibc 字段布局。配套 C 程序会实际申请和释放空间，并输出 JSON 事件。</p><p><a href="source/memory_journey.c" download="memory_journey.c">下载源码</a>，运行后可在这里载入 JSON，按记录回放。也可下载本次 Windows C 程序实际生成的<a href="traces/windows-success.json" download="windows-success.json">成功记录</a>或<a href="traces/windows-injected-failure.json" download="windows-injected-failure.json">注入失败记录</a>，再载入查看。载入内容由提供者说明来源，页面不验证其真实性。</p><label class="file-control">载入运行记录<input id="trace-file" type="file" accept=".json,application/json"></label><p id="trace-status" role="status"></p></div></details>
+  <footer><p>问号表示未初始化；灰色表示访问已失效。它们都不是实际内存内容。</p><p>释放不等于清零，也不保证内存立即归还操作系统。<a href="https://man7.org/linux/man-pages/man3/malloc.3.html" target="_blank" rel="noopener noreferrer">malloc(3)</a></p><span>何伟明 · 24电信4班 · 2026.10.22</span></footer>
+</main>
+</body>
+</html>

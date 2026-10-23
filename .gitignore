@@ -1,0 +1,13 @@
+build/
+*.exe
+*.obj
+*.pdb
+*.ilk
+__pycache__/
+node_modules/
+video/out/
+video/.cache/
+video/.remotion/
+video/.git/
+video/final/malloc-explainer.mp4
+*.partial

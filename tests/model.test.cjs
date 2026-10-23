@@ -1,0 +1,38 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const {events, snapshots, diagnose, validateTrace} = require('../docs/model.js');
+const states = snapshots();
+assert.equal(states.length,8);
+assert.equal(diagnose(states[0],0).type,'missing');
+assert.equal(diagnose(states[1],0).type,'uninitialized');
+assert.equal(diagnose(states[2],0).value,1);
+assert.equal(diagnose(states[2],1).type,'uninitialized');
+assert.equal(diagnose(states[5],4).type,'bounds');
+assert.equal(diagnose(states[5],-1).type,'bounds');
+assert.equal(diagnose(states[6],3).value,4);
+assert.equal(states[6].output,4);
+assert.equal(diagnose(states[7],0).type,'freed');
+assert.equal(states[1].values[0],null,'Earlier snapshots must remain uninitialized');
+assert.throws(()=>validateTrace({schema:1,elements:4,events:[{kind:'write',index:8,value:5}]}));
+assert.throws(()=>validateTrace({schema:1,elements:4,sizeof_int:4,failure_injected:false,events:[]}));
+const base = {schema:1,elements:4,sizeof_int:4,failure_injected:false,events};
+const reversed = {...base,events:events.map(event=>Object.fromEntries(Object.entries(event).reverse()))};
+assert.deepEqual(validateTrace(reversed),states,'Object key order must not change JSON meaning');
+assert.deepEqual(validateTrace({...base,events:[{kind:'allocation_failed'}]})[1].phase,'failed','Real failure need not be injected');
+assert.throws(()=>validateTrace({...base,failure_injected:true}));
+assert.throws(()=>validateTrace({...base,sizeof_int:Number.MAX_SAFE_INTEGER}));
+assert.throws(()=>validateTrace({...base,events:[...events.slice(0,5),{kind:'read',index:3,value:999},events[6]]}));
+assert.throws(()=>validateTrace({...base,events:[{kind:'allocate',unexpected:true},...events.slice(1)]}));
+assert.throws(()=>snapshots([{kind:'read',index:3,value:4}]));
+assert.throws(()=>snapshots([{kind:'allocate'},{kind:'write',index:4,value:1}]));
+assert.throws(()=>snapshots([{kind:'allocate'},{kind:'free'},{kind:'free'}]));
+assert.equal(diagnose(states[5],-1).text.includes('-1'),true);
+assert.equal(Object.isFrozen(events[0]),true);
+for(const name of process.argv.slice(2)){
+  const trace = JSON.parse(fs.readFileSync(name,'utf8').replace(/^\uFEFF/,''));
+  const replay = validateTrace(trace);
+  assert.equal(replay.at(-1).phase,trace.events[0].kind==='allocation_failed'?'failed':'freed');
+  if(replay.length>2)assert.deepEqual(replay,states,'Native C events must match the teaching sequence');
+  else assert.equal(diagnose(replay[1],0).type,'null');
+}
+console.log('PASS: lifecycle, initialization, bounds, use-after-free, semantic JSON validation and invalid-event rejection' + (process.argv.length>2?' + supplied C traces':''));

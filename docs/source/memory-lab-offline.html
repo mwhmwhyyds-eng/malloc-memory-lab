@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="malloc 内存旅程实验室：通过代码和可交互的内存状态图，理解申请、初始化、读取与释放。">
+  <title>内存旅程实验室 · malloc</title>
+  <style>:root{--paper:#f6f7fb;--ink:#1b2946;--muted:#64748b;--teal:#008f84;--purple:#6954d6;--orange:#db643d;--line:#dce2eb;--pale:#eeebfa;--mint:#e5f3ef}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 100% 0,#dff4f4 0,transparent 31%),var(--paper);color:var(--ink);font-family:"Microsoft YaHei","PingFang SC",system-ui,sans-serif;line-height:1.65}button,input,a{-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer;color:inherit}button:focus-visible,a:focus-visible,summary:focus-visible,input:focus-visible{outline:3px solid var(--purple);outline-offset:4px}a{color:var(--teal);text-underline-offset:4px}button:disabled{cursor:default;opacity:.4}main{max-width:1240px;padding:30px 48px 34px;margin:auto}.masthead{display:flex;justify-content:space-between;gap:20px;font-size:13px;color:var(--muted);padding-bottom:18px;border-bottom:1px solid var(--line)}.masthead a{text-decoration:none}.intro{padding:43px 0 35px}.eyebrow{font:600 11px/1.5 system-ui,sans-serif;letter-spacing:2px;color:var(--teal);margin:0 0 12px}h1{font-size:42px;line-height:1.3;letter-spacing:-1.5px;margin:0;font-weight:750}h1 span{font-size:25px;font-weight:450;letter-spacing:0;color:var(--muted);margin-left:28px;white-space:nowrap}.lede{max-width:850px;color:var(--muted);font-size:15px;margin:17px 0 0}.journey{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid var(--line);margin-bottom:30px}.journey button{background:none;border:0;border-bottom:3px solid transparent;text-align:left;padding:10px 4px 15px;color:var(--muted);font-size:16px}.journey button span{font-family:Consolas,monospace;margin-right:13px;font-size:12px;color:var(--purple)}.journey button[aria-current=step]{border-color:var(--teal);color:var(--ink);font-weight:650}.workbench{display:grid;grid-template-columns:1fr 1.15fr;gap:44px}.section-label{display:flex;align-items:center;justify-content:space-between;gap:15px}.section-label h2{font-size:14px;font-weight:650;margin:0}.section-label>span{font-size:11px;letter-spacing:1px;color:var(--muted)}pre{background:var(--pale);margin:15px 0 0;padding:21px 0;border-radius:3px;overflow:auto;font:15px/2.1 Consolas,"Courier New",monospace}code>span{display:block;padding:0 18px 0 12px;border-left:3px solid transparent;white-space:pre}code>span.active{background:#d9eae6;border-left-color:var(--teal);color:#00776e;font-weight:700}code>span.error-line{border-left-color:var(--orange);background:#f9e8df;color:#9e3e1b}code i{font-style:normal;color:#8585a2;display:inline-block;width:25px;font-size:11px;font-weight:400}.code-caption{color:var(--muted);font-size:11px;margin:8px 0 0}.scene-heading{margin:23px 0 14px}.scene-heading>span{font-size:11px;color:var(--teal);letter-spacing:1px}h3{font-size:23px;line-height:1.4;margin:4px 0 0;font-weight:650}.memory-scene{min-height:146px;display:flex;align-items:center;gap:15px}.pointer{text-align:center;min-width:58px}.variable{display:block;margin:auto;font:600 30px/1.6 Consolas,monospace;color:var(--purple)}.pointer-state{font-size:10px;color:var(--muted);white-space:nowrap}.pointer-link{display:flex;flex-direction:column;align-items:center;color:var(--teal);flex:0 0 42px;opacity:0}.pointer-link span{font-size:10px}.pointer-link b{font-size:30px;line-height:1.2;font-weight:400}.array-wrap{flex:1;min-width:0}.array{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;position:relative}.cell{height:66px;background:#e5e9f0;display:flex;align-items:center;justify-content:center;position:relative;font:600 28px/1 Consolas,monospace;transition:background .28s,transform .28s,color .28s}.cell .index{position:absolute;bottom:-23px;font:11px/1 Consolas,monospace;color:var(--muted)}.cell.ready{background:var(--pale);color:var(--purple)}.cell.written{background:var(--mint);color:var(--ink)}.cell.active{background:#f8e4d6;color:#a94420;transform:translateY(-5px)}.cell.released{background:#e6e8ee;color:#8a91a0}.cell.invalid{background:#f8e4d6;color:#a94420}.array .out-of-bounds{position:absolute;right:-1px;top:-29px;font-size:11px;color:#a94420}#allocation-label{text-align:center;font-size:11px;color:var(--muted);margin:37px 0 0}.result{border-bottom:1px solid var(--line);padding:6px 0 11px;display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}.result output{font:600 21px/1 Consolas,monospace;color:var(--teal)}.explanation{font-size:13px;line-height:1.85;margin:14px 0 0;min-height:49px}.playback{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);margin-top:25px;padding-bottom:27px;gap:16px}.controls{display:flex;gap:12px;align-items:center}.controls button{padding:9px 19px;border-radius:4px;font-size:13px;min-height:42px}.primary{background:var(--teal);color:white;border:1px solid var(--teal)}.secondary{background:transparent;border:1px solid #b7c3d4}.text-button{background:none;border:1px solid transparent;color:var(--muted)}#step-counter{font:12px/1.5 Consolas,monospace;color:var(--muted);white-space:nowrap}.experiment{display:grid;grid-template-columns:1fr 1.15fr;gap:0 44px;padding:28px 0 21px}.experiment .eyebrow{color:var(--orange);margin-bottom:6px}.experiment h2{font-size:19px;margin:0;font-weight:650}.experiment-intro>p:last-child{font-size:12px;color:var(--muted);margin:7px 0 0}.experiment-options{display:flex;align-content:center;align-items:center;flex-wrap:wrap;gap:9px}.experiment-options button{border:1px solid var(--line);border-radius:4px;background:transparent;padding:9px 12px;font-size:12px}.experiment-options button[aria-pressed=true]{color:#a94420;border-color:#e8b499;background:#fbeee6}#diagnostic{grid-column:2;font-size:12px;line-height:1.8;color:var(--muted);margin:12px 0 0;min-height:42px}#diagnostic.warning{color:#a94420}.evidence{border-top:1px solid var(--line);padding:16px 0;font-size:12px;color:var(--muted)}summary{cursor:pointer;color:var(--ink);width:fit-content}.evidence>div{padding:5px 0 0;max-width:900px}.file-control{display:block;margin-top:15px;font-weight:600;color:var(--ink)}.file-control input{display:block;margin-top:8px;font-size:12px;max-width:100%}footer{padding-top:16px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}footer p{margin:2px 0}footer>span{display:block;margin-top:12px;font-size:10px;letter-spacing:.4px}[hidden]{display:none!important}@media(max-width:1000px){main{padding:25px 30px}h1 span{display:block;margin:12px 0 0;font-size:22px}.workbench{gap:27px;grid-template-columns:1fr 1fr}pre{font-size:13px}.memory-scene{gap:9px}.pointer-link{flex-basis:25px}.cell{height:55px}.experiment{gap:0 27px}.experiment-options button{padding:8px}}@media(max-width:760px){main{padding:20px}.masthead{font-size:10px;gap:10px;flex-wrap:wrap}.intro{padding:30px 0 24px}h1{font-size:32px}h1 span{font-size:20px}.lede{font-size:13px}.journey button{font-size:12px;padding:8px 1px 11px}.journey button span{display:block;margin:0 0 2px;font-size:10px}.workbench{grid-template-columns:1fr;gap:25px}.memory-side{padding-top:3px}pre{font-size:clamp(11px,3.2vw,15px);padding:14px 0}.scene-heading{margin:17px 0 7px}.cell{height:66px}.memory-scene{gap:12px}.pointer-link{flex-basis:32px}.controls{gap:4px;flex-wrap:wrap}.controls button{font-size:12px;padding:8px 12px}.playback{margin-top:18px}.experiment{grid-template-columns:1fr;gap:15px}.experiment-options{gap:7px}#diagnostic{grid-column:1;margin-top:0}.explanation{min-height:0}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.attempt{font-size:12px;color:#a94420;margin:10px 0 0}.attempt code{font-family:Consolas,monospace;overflow-wrap:anywhere}
+</style>
+
+</head>
+<body>
+<main>
+  <header class="masthead"><span>嵌入式 Linux 系统 · 补充创意案例</span><a href="data:text/plain;charset=utf-8;base64,I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHN0cmluZy5oPgoKLyogVGhlIGZhaWx1cmUgc3dpdGNoIGluamVjdHMgTlVMTDsgaXQgZG9lcyBub3QgZXhoYXVzdCBzeXN0ZW0gbWVtb3J5LiAqLwppbnQgbWFpbihpbnQgYXJnYywgY2hhciAqKmFyZ3YpIHsKICAgIGludCBpbmplY3RfZmFpbHVyZSA9IDA7CiAgICBpZiAoYXJnYyA9PSAyICYmIHN0cmNtcChhcmd2WzFdLCAiLS1zaW11bGF0ZS1mYWlsdXJlIikgPT0gMCkgewogICAgICAgIGluamVjdF9mYWlsdXJlID0gMTsKICAgIH0gZWxzZSBpZiAoYXJnYyAhPSAxKSB7CiAgICAgICAgZnByaW50ZihzdGRlcnIsICJVc2FnZTogbWVtb3J5X2pvdXJuZXkgWy0tc2ltdWxhdGUtZmFpbHVyZV1cbiIpOwogICAgICAgIHJldHVybiBFWElUX0ZBSUxVUkU7CiAgICB9CgogICAgaW50ICpwID0gaW5qZWN0X2ZhaWx1cmUgPyBOVUxMIDogbWFsbG9jKDQgKiBzaXplb2YgKnApOwogICAgcHJpbnRmKCJ7XCJzY2hlbWFcIjoxLFwiZWxlbWVudHNcIjo0LFwic2l6ZW9mX2ludFwiOiV6dSwiLCBzaXplb2YgKnApOwogICAgcHJpbnRmKCJcImZhaWx1cmVfaW5qZWN0ZWRcIjolcyxcImV2ZW50c1wiOlsiLCBpbmplY3RfZmFpbHVyZSA/ICJ0cnVlIiA6ICJmYWxzZSIpOwogICAgaWYgKHAgPT0gTlVMTCkgewogICAgICAgIHB1dHMoIntcImtpbmRcIjpcImFsbG9jYXRpb25fZmFpbGVkXCJ9XX0iKTsKICAgICAgICByZXR1cm4gRVhJVF9GQUlMVVJFOwogICAgfQoKICAgIC8qIE5ldmVyIHJlYWQgdGhlIG5ld2x5IGFsbG9jYXRlZCwgdW5pbml0aWFsaXplZCBlbGVtZW50cy4gKi8KICAgIHByaW50Zigie1wia2luZFwiOlwiYWxsb2NhdGVcIn0iKTsKICAgIGZvciAoaW50IGkgPSAwOyBpIDwgNDsgKytpKSB7CiAgICAgICAgcFtpXSA9IGkgKyAxOwogICAgICAgIHByaW50ZigiLHtcImtpbmRcIjpcIndyaXRlXCIsXCJpbmRleFwiOiVkLFwidmFsdWVcIjolZH0iLCBpLCBwW2ldKTsKICAgIH0KICAgIHByaW50ZigiLHtcImtpbmRcIjpcInJlYWRcIixcImluZGV4XCI6MyxcInZhbHVlXCI6JWR9IiwgcFszXSk7CiAgICBmcmVlKHApOwogICAgLyogRG8gbm90IGV2YWx1YXRlIHAgb3IgYWNjZXNzIHRoZSBmb3JtZXIgb2JqZWN0IGFmdGVyIGZyZWUuICovCiAgICBwdXRzKCIse1wia2luZFwiOlwiZnJlZVwifV19Iik7CiAgICAvKiBBIGNvbXBsZXRlIHRyYWNlIG11c3QgYWxzbyByZWFjaCB0aGUgb3V0cHV0IHN0cmVhbSBzdWNjZXNzZnVsbHkuICovCiAgICBpZiAoZmZsdXNoKHN0ZG91dCkgPT0gRU9GIHx8IGZlcnJvcihzdGRvdXQpKSByZXR1cm4gRVhJVF9GQUlMVVJFOwogICAgcmV0dXJuIEVYSVRfU1VDQ0VTUzsKfQo=" download="memory_journey.c">下载 C 源码 <span aria-hidden="true">↗</span></a></header>
+  <section class="intro">
+    <p class="eyebrow">MALLOC / MEMORY JOURNEY</p>
+    <h1>内存旅程实验室<span>一块空间，四个阶段。</span></h1>
+    <p class="lede">跟随四个整数，观察一次申请如何变成可用的数据，以及释放如何结束对象的使用。</p>
+  </section>
+  <nav class="journey" aria-label="旅程阶段">
+    <button data-jump="1"><span>01</span>申请空间</button>
+    <button data-jump="5"><span>02</span>写入数据</button>
+    <button data-jump="6"><span>03</span>读取元素</button>
+    <button data-jump="7"><span>04</span>释放对象</button>
+  </nav>
+  <section class="workbench" aria-label="代码与内存状态">
+    <div class="code-side">
+      <div class="section-label"><h2>C 代码</h2><span>主线片段</span></div>
+      <pre aria-label="malloc 示例代码"><code><span data-line="1"><i>1</i>int *p = malloc(4 * sizeof *p);</span><span data-line="2"><i>2</i>if (p == NULL)</span><span data-line="3"><i>3</i>    return EXIT_FAILURE;</span><span data-line="4"><i>4</i></span><span data-line="5"><i>5</i>for (int i = 0; i &lt; 4; ++i)</span><span data-line="6"><i>6</i>    p[i] = i + 1;</span><span data-line="7"><i>7</i></span><span data-line="8"><i>8</i>printf("%d\n", p[3]);</span><span data-line="9"><i>9</i>free(p);</span></code></pre>
+      <p class="code-caption">完整源码含头文件、main 和事件记录输出。</p>
+    </div>
+    <div class="memory-side">
+      <div class="section-label"><h2>内存状态</h2><span id="data-origin">教学演示</span></div>
+      <div class="scene-heading"><span id="phase-number">00 / 准备</span><h3 id="scene-title">从一个申请开始</h3></div>
+      <div class="memory-scene" id="memory-scene">
+        <div class="pointer"><span class="variable">p</span><span class="pointer-state" id="pointer-state">尚未赋值</span></div>
+        <div class="pointer-link" id="pointer-link" aria-hidden="true"><span>指向</span><b>⟶</b></div>
+        <div class="array-wrap"><div class="array" id="array" aria-label="四个 int 元素"></div><p id="allocation-label">4 × sizeof(int) 字节</p></div>
+      </div>
+      <div class="result"><span>程序输出</span><output id="program-output">—</output></div>
+      <p id="explanation" class="explanation" aria-live="polite"></p>
+      <p id="attempt" class="attempt" hidden>待判断的操作：<code id="attempt-code"></code></p>
+    </div>
+  </section>
+  <div class="playback"><div class="controls"><button id="previous" class="secondary">上一步</button><button id="next" class="primary">开始申请 <span aria-hidden="true">→</span></button><button id="reset" class="text-button">重新开始</button></div><span id="step-counter">0 / 7</span></div>
+  <section class="experiment" aria-labelledby="experiment-title">
+    <div class="experiment-intro"><p class="eyebrow">TRY / 试着判断</p><h2 id="experiment-title">如果操作顺序错了呢？</h2><p>选择一种情况，看看访问为什么不成立。</p></div>
+    <div class="experiment-options"><button data-fault="uninitialized">刚申请就读取</button><button data-fault="bounds">访问 p[4]</button><button data-fault="freed">释放后继续读取</button><button id="simulate-failure">申请失败时</button><button id="return-main" hidden>返回原来的步骤</button></div>
+    <p id="diagnostic" role="status">错误探索只展示原因，不实际执行有未定义行为的 C 代码。</p>
+  </section>
+  <details class="evidence"><summary>查看配套 C 程序与运行记录</summary><div><p>网页用 JavaScript 绘制教学示意，不调用系统 malloc，也不展示实际地址或 glibc 字段布局。配套 C 程序会实际申请和释放空间，并输出 JSON 事件。</p><p><a href="data:text/plain;charset=utf-8;base64,I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHN0cmluZy5oPgoKLyogVGhlIGZhaWx1cmUgc3dpdGNoIGluamVjdHMgTlVMTDsgaXQgZG9lcyBub3QgZXhoYXVzdCBzeXN0ZW0gbWVtb3J5LiAqLwppbnQgbWFpbihpbnQgYXJnYywgY2hhciAqKmFyZ3YpIHsKICAgIGludCBpbmplY3RfZmFpbHVyZSA9IDA7CiAgICBpZiAoYXJnYyA9PSAyICYmIHN0cmNtcChhcmd2WzFdLCAiLS1zaW11bGF0ZS1mYWlsdXJlIikgPT0gMCkgewogICAgICAgIGluamVjdF9mYWlsdXJlID0gMTsKICAgIH0gZWxzZSBpZiAoYXJnYyAhPSAxKSB7CiAgICAgICAgZnByaW50ZihzdGRlcnIsICJVc2FnZTogbWVtb3J5X2pvdXJuZXkgWy0tc2ltdWxhdGUtZmFpbHVyZV1cbiIpOwogICAgICAgIHJldHVybiBFWElUX0ZBSUxVUkU7CiAgICB9CgogICAgaW50ICpwID0gaW5qZWN0X2ZhaWx1cmUgPyBOVUxMIDogbWFsbG9jKDQgKiBzaXplb2YgKnApOwogICAgcHJpbnRmKCJ7XCJzY2hlbWFcIjoxLFwiZWxlbWVudHNcIjo0LFwic2l6ZW9mX2ludFwiOiV6dSwiLCBzaXplb2YgKnApOwogICAgcHJpbnRmKCJcImZhaWx1cmVfaW5qZWN0ZWRcIjolcyxcImV2ZW50c1wiOlsiLCBpbmplY3RfZmFpbHVyZSA/ICJ0cnVlIiA6ICJmYWxzZSIpOwogICAgaWYgKHAgPT0gTlVMTCkgewogICAgICAgIHB1dHMoIntcImtpbmRcIjpcImFsbG9jYXRpb25fZmFpbGVkXCJ9XX0iKTsKICAgICAgICByZXR1cm4gRVhJVF9GQUlMVVJFOwogICAgfQoKICAgIC8qIE5ldmVyIHJlYWQgdGhlIG5ld2x5IGFsbG9jYXRlZCwgdW5pbml0aWFsaXplZCBlbGVtZW50cy4gKi8KICAgIHByaW50Zigie1wia2luZFwiOlwiYWxsb2NhdGVcIn0iKTsKICAgIGZvciAoaW50IGkgPSAwOyBpIDwgNDsgKytpKSB7CiAgICAgICAgcFtpXSA9IGkgKyAxOwogICAgICAgIHByaW50ZigiLHtcImtpbmRcIjpcIndyaXRlXCIsXCJpbmRleFwiOiVkLFwidmFsdWVcIjolZH0iLCBpLCBwW2ldKTsKICAgIH0KICAgIHByaW50ZigiLHtcImtpbmRcIjpcInJlYWRcIixcImluZGV4XCI6MyxcInZhbHVlXCI6JWR9IiwgcFszXSk7CiAgICBmcmVlKHApOwogICAgLyogRG8gbm90IGV2YWx1YXRlIHAgb3IgYWNjZXNzIHRoZSBmb3JtZXIgb2JqZWN0IGFmdGVyIGZyZWUuICovCiAgICBwdXRzKCIse1wia2luZFwiOlwiZnJlZVwifV19Iik7CiAgICAvKiBBIGNvbXBsZXRlIHRyYWNlIG11c3QgYWxzbyByZWFjaCB0aGUgb3V0cHV0IHN0cmVhbSBzdWNjZXNzZnVsbHkuICovCiAgICBpZiAoZmZsdXNoKHN0ZG91dCkgPT0gRU9GIHx8IGZlcnJvcihzdGRvdXQpKSByZXR1cm4gRVhJVF9GQUlMVVJFOwogICAgcmV0dXJuIEVYSVRfU1VDQ0VTUzsKfQo=" download="memory_journey.c">下载源码</a>，运行后可在这里载入 JSON，按记录回放。也可下载本次 Windows C 程序实际生成的<a href="data:application/json;base64,eyJzY2hlbWEiOjEsImVsZW1lbnRzIjo0LCJzaXplb2ZfaW50Ijo0LCJmYWlsdXJlX2luamVjdGVkIjpmYWxzZSwiZXZlbnRzIjpbeyJraW5kIjoiYWxsb2NhdGUifSx7ImtpbmQiOiJ3cml0ZSIsImluZGV4IjowLCJ2YWx1ZSI6MX0seyJraW5kIjoid3JpdGUiLCJpbmRleCI6MSwidmFsdWUiOjJ9LHsia2luZCI6IndyaXRlIiwiaW5kZXgiOjIsInZhbHVlIjozfSx7ImtpbmQiOiJ3cml0ZSIsImluZGV4IjozLCJ2YWx1ZSI6NH0seyJraW5kIjoicmVhZCIsImluZGV4IjozLCJ2YWx1ZSI6NH0seyJraW5kIjoiZnJlZSJ9XX0NCg==" download="windows-success.json">成功记录</a>或<a href="data:application/json;base64,eyJzY2hlbWEiOjEsImVsZW1lbnRzIjo0LCJzaXplb2ZfaW50Ijo0LCJmYWlsdXJlX2luamVjdGVkIjp0cnVlLCJldmVudHMiOlt7ImtpbmQiOiJhbGxvY2F0aW9uX2ZhaWxlZCJ9XX0NCg==" download="windows-injected-failure.json">注入失败记录</a>，再载入查看。载入内容由提供者说明来源，页面不验证其真实性。</p><label class="file-control">载入运行记录<input id="trace-file" type="file" accept=".json,application/json"></label><p id="trace-status" role="status"></p></div></details>
+  <footer><p>问号表示未初始化；灰色表示访问已失效。它们都不是实际内存内容。</p><p>释放不等于清零，也不保证内存立即归还操作系统。<a href="https://man7.org/linux/man-pages/man3/malloc.3.html" target="_blank" rel="noopener noreferrer">malloc(3)</a></p><span>何伟明 · 24电信4班 · 2026.10.22</span></footer>
+</main>
+<script>(function (root) {
+  'use strict';
+  const events = Object.freeze([
+    {kind:'allocate'},
+    ...[0,1,2,3].map(index => ({kind:'write', index, value:index+1})),
+    {kind:'read', index:3, value:4},
+    {kind:'free'}
+  ].map(event => Object.freeze(event)));
+
+  // Compare fields by meaning; JSON object key order is not significant.
+  function sameEvent(actual, expected) {
+    if (!actual || typeof actual !== 'object' || Array.isArray(actual)) return false;
+    const keys = Object.keys(expected);
+    return Object.keys(actual).length === keys.length &&
+      keys.every(key => Object.hasOwn(actual, key) && actual[key] === expected[key]);
+  }
+
+  function checkedEvents(trace, complete) {
+    if (!Array.isArray(trace)) throw Error('事件记录必须是数组。');
+    if (trace.length === 1 && sameEvent(trace[0], {kind:'allocation_failed'})) {
+      return [{kind:'allocation_failed'}];
+    }
+    if (trace.length > events.length || (complete && trace.length !== events.length) ||
+        !trace.every((event, i) => sameEvent(event, events[i]))) {
+      throw Error('事件不匹配：本案例只回放配套的四元素旅程或分配失败记录。');
+    }
+    return trace.map((event, i) => ({...events[i]}));
+  }
+
+  function snapshots(trace = events) {
+    let state = {phase:'idle', values:[null,null,null,null], active:-1, output:null};
+    const result = [{...state, values:[...state.values]}];
+    for (const event of checkedEvents(trace, false)) {
+      state = {...state, values:[...state.values]};
+      state.active = -1;
+      if (event.kind === 'allocate') state.phase = 'allocated';
+      if (event.kind === 'write') {
+        state.values[event.index] = event.value;
+        state.active = event.index;
+        state.phase = 'writing';
+      }
+      if (event.kind === 'read') {
+        state.phase = 'reading'; state.active = event.index; state.output = event.value;
+      }
+      if (event.kind === 'free') state.phase = 'freed';
+      if (event.kind === 'allocation_failed') state.phase = 'failed';
+      result.push(state);
+    }
+    return result;
+  }
+  function validateTrace(data) {
+    if (!data || Array.isArray(data) || data.schema !== 1 || data.elements !== 4 ||
+        !Number.isSafeInteger(data.sizeof_int) || data.sizeof_int < 1 ||
+        !Number.isSafeInteger(4 * data.sizeof_int) || typeof data.failure_injected !== 'boolean') {
+      throw Error('记录格式不匹配，请使用配套 C 程序生成的 JSON。');
+    }
+    const trace = checkedEvents(data.events, true);
+    if (data.failure_injected && trace[0].kind !== 'allocation_failed') {
+      throw Error('失败注入标记与事件不一致。');
+    }
+    return snapshots(trace);
+  }
+  function diagnose(state, index) {
+    if (state.phase === 'idle') return {type:'missing', text:'尚未申请空间，不能访问元素。'};
+    if (state.phase === 'failed') return {type:'null', text:'申请失败后不能通过空指针访问元素。'};
+    if (state.phase === 'freed') return {type:'freed', text:'对象已经释放，继续访问属于未定义行为。'};
+    if (!Number.isInteger(index) || index < 0 || index >= 4) return {type:'bounds', text:`4 个元素的合法下标为 0～3；下标 ${String(index)} 超出有效范围，访问会越界。`};
+    if (state.values[index] === null) return {type:'uninitialized', text:'这个元素尚未初始化，应先写入有效值。问号是示意符号，不是读取结果。'};
+    return {type:'ok', value:state.values[index], text:`p[${index}] 的值为 ${state.values[index]}。`};
+  }
+  const api = {events, snapshots, validateTrace, diagnose};
+  root.MemoryJourney = api;
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+})(globalThis);
+
+(function () {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const model = MemoryJourney;
+  let states = model.snapshots(), position = 0, savedPosition = 0, fault = null;
+  let importGeneration = 0;
+  const copy = [
+    ['00 / 准备','从一个申请开始','程序需要保存四个整数。点击“开始申请”，观察空间与数据如何依次就位。'],
+    ['01 / 申请','有了空间，还没有有效数据','成功申请后，p 指向可容纳 4 个 int 的空间。先检查返回值；问号表示内容尚未初始化。'],
+    ['02 / 写入','第一个元素写入 1','执行 p[0] = 1。只有已写入的元素有了本案例设定的有效值，其余元素仍未初始化。'],
+    ['02 / 写入','第二个元素写入 2','执行 p[1] = 2。初始化按元素进行，不会因为写了一个值就自动初始化整块空间。'],
+    ['02 / 写入','第三个元素写入 3','执行 p[2] = 3。下标从 0 开始，p[2] 是第三个元素。'],
+    ['02 / 写入','四个元素都已初始化','执行 p[3] = 4。现在四个元素依次保存 1、2、3、4，可在合法范围内读取。'],
+    ['03 / 读取','p[3] 读取的是第四个元素','高亮下标 3，对应的值为 4。printf 输出 4；读取没有改变这四个元素的值。'],
+    ['04 / 释放','对象的使用到这里结束','free(p) 之后不能再访问原对象。灰色表示访问失效，不表示数据清零，p 也不会自动变成 NULL。']
+  ];
+  const faults = {
+    uninitialized:{position:1,index:0,attempt:'printf("%d\\n", p[0]);',title:'刚申请，就读取 p[0]？'},
+    bounds:{position:5,index:4,attempt:'printf("%d\\n", p[4]);',title:'四个元素，能访问 p[4] 吗？'},
+    freed:{position:7,index:0,attempt:'printf("%d\\n", p[0]);',title:'free 之后，还能再读取吗？'}
+  };
+  function render() {
+    const state = states[position];
+    const isFailed = state.phase === 'failed';
+    const available = !['idle','failed','freed'].includes(state.phase);
+    const info = isFailed ? ['01 / 申请失败','没有得到可用的空间','返回 NULL 后应停止这条使用路径。本示例直接退出，不执行后续写入和读取；此情境不代表当前机器真的内存不足。'] : copy[Math.min(position,7)];
+    $('phase-number').textContent = info[0]; $('scene-title').textContent = fault ? faults[fault].title : info[1];
+    $('explanation').textContent = info[2];
+    $('pointer-state').textContent = available ? '指向分配对象' : state.phase === 'freed' ? '原指向已失效' : isFailed ? 'NULL' : '尚未赋值';
+    $('pointer-link').style.opacity = available ? '1' : '0';
+    $('memory-scene').dataset.phase = state.phase;
+    const array = $('array'); array.replaceChildren();
+    for (let i=0;i<4;i++) {
+      const cell = document.createElement('div'); cell.className = 'cell'; cell.dataset.index = String(i);
+      let value = '—';
+      if (available) { value = state.values[i] === null ? '?' : String(state.values[i]); cell.classList.add(state.values[i] === null ? 'ready':'written'); }
+      if (state.phase === 'freed') { value = '×'; cell.classList.add('released'); }
+      if (state.active === i && available && !fault) cell.classList.add('active');
+      if (fault && faults[fault].index === i) cell.classList.add('invalid');
+      const number = document.createElement('span'); number.className = 'value'; number.textContent = value;
+      const index = document.createElement('span'); index.className = 'index'; index.textContent = `[${i}]`;
+      cell.append(number,index); cell.setAttribute('aria-label',`下标 ${i}：${value==='?'?'尚未初始化':value==='×'?'访问失效':value==='—'?'尚无可用对象':value}`);array.append(cell);
+    }
+    if (fault === 'bounds') {const hint=document.createElement('span');hint.className='out-of-bounds';hint.textContent='p[4] 在对象范围之外';array.append(hint);}
+    $('program-output').textContent = state.output === null ? '—' : String(state.output);
+    let lines = isFailed ? [2,3] : position===0 ? [] : position===1 ? [1,2] : position<=5 ? [5,6] : position===6 ? [8] : [9];
+    document.querySelectorAll('[data-line]').forEach(el => {const n=Number(el.dataset.line);el.classList.toggle('active',lines.includes(n));});
+    $('attempt').hidden=!fault;$('attempt-code').textContent=fault?faults[fault].attempt:'';
+    document.querySelectorAll('[data-jump]').forEach((el,i)=>{const current=state.phase==='idle'?-1:isFailed||position===1?0:position<=5?1:position===6?2:3;if(current===i)el.setAttribute('aria-current','step');else el.removeAttribute('aria-current');el.disabled=states.length===2&&i>0;});
+    $('previous').disabled=position===0||!!fault;$('next').disabled=position===states.length-1||!!fault;
+    $('next').textContent=isFailed?'使用路径已停止':position===0?'开始申请 →':position===states.length-1?'旅程结束':'下一步 →';
+    $('step-counter').textContent=`${position} / ${states.length-1}`;
+    document.querySelectorAll('[data-fault]').forEach(el=>{el.setAttribute('aria-pressed',String(el.dataset.fault===fault));el.disabled=states.length===2;});
+    $('return-main').hidden=!fault;
+    const result=fault?model.diagnose(state,faults[fault].index):null;
+    $('diagnostic').textContent=result?result.text+' 本页没有实际执行这个错误操作。':'错误探索只展示原因，不实际执行有未定义行为的 C 代码。';
+    $('diagnostic').classList.toggle('warning',!!fault);
+  }
+  function leaveFault(){if(fault){position=savedPosition;fault=null;}}
+  $('next').onclick=()=>{if(!fault&&position<states.length-1){position++;render();}};
+  $('previous').onclick=()=>{if(!fault&&position>0){position--;render();}};
+  function clearImportedRecord() {
+    // Invalidate pending file reads when the user switches scenarios.
+    importGeneration++;
+    $('trace-status').textContent='';
+    $('trace-file').value='';
+  }
+  $('reset').onclick=()=>{clearImportedRecord();states=model.snapshots();position=0;fault=null;$('data-origin').textContent='教学演示';$('allocation-label').textContent='4 × sizeof(int) 字节';render();};
+  $('return-main').onclick=()=>{leaveFault();render();};
+  $('simulate-failure').onclick=()=>{clearImportedRecord();states=model.snapshots([{kind:'allocation_failed'}]);position=1;fault=null;$('data-origin').textContent='失败情境 · 教学设定';$('allocation-label').textContent='申请未成功，没有可用对象';render();};
+  document.querySelectorAll('[data-jump]').forEach(el=>el.onclick=()=>{leaveFault();position=Math.min(Number(el.dataset.jump),states.length-1);render();});
+  document.querySelectorAll('[data-fault]').forEach(el=>el.onclick=()=>{if(!fault)savedPosition=position;fault=el.dataset.fault;position=faults[fault].position;render();});
+  $('trace-file').onchange=async event=>{
+    const request=++importGeneration;
+    const file=event.target.files[0];if(!file)return;
+    $('trace-status').textContent='正在读取记录…';
+    try {
+      if(file.size>32768)throw Error('记录文件不能超过 32 KB。');
+      const text=await file.text();
+      if(request!==importGeneration)return;
+      const data=JSON.parse(text.replace(/^\uFEFF/, ''));const checked=model.validateTrace(data);
+      states=checked;position=0;fault=null;$('data-origin').textContent='载入的事件记录';
+      $('allocation-label').textContent=`记录中的请求大小：4 × ${data.sizeof_int} = ${4*data.sizeof_int} 字节`;
+      $('trace-status').textContent=`已载入 ${data.events.length} 个事件。${data.failure_injected?'其中的分配失败为程序主动注入。':''} 文件来源由提供者说明。`;
+      render();
+    }catch(error){
+      if(request!==importGeneration)return;
+      const message=error instanceof SyntaxError?'JSON 无法解析，请重新导出配套 C 程序的运行记录。':error.message;
+      $('trace-status').textContent=message+' 当前展示保持不变。';
+    }
+  };
+  render();
+})();
+</script></body>
+</html>

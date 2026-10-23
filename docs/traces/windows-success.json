@@ -1,0 +1,1 @@
+{"schema":1,"elements":4,"sizeof_int":4,"failure_injected":false,"events":[{"kind":"allocate"},{"kind":"write","index":0,"value":1},{"kind":"write","index":1,"value":2},{"kind":"write","index":2,"value":3},{"kind":"write","index":3,"value":4},{"kind":"read","index":3,"value":4},{"kind":"free"}]}
