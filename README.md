@@ -1,6 +1,18 @@
-# 内存旅程实验室
+# malloc：一块内存的旅程
 
-《嵌入式 Linux 系统》malloc 课程作业的主动补充案例。通过四个整数的生命周期，连接 C 代码与可交互的内存状态图。
+《嵌入式 Linux 系统》个人课程作业的配套项目，包含函数原理动画、交互创意案例与 C 源码。完整课程讲解在提交的 PDF 中。
+
+## 在线展示
+
+原理视频：<https://mwhmwhyyds-eng.github.io/malloc-memory-lab/watch.html>
+
+交互案例：<https://mwhmwhyyds-eng.github.io/malloc-memory-lab/lab.html>
+
+展示首页：<https://mwhmwhyyds-eng.github.io/malloc-memory-lab/>
+
+GitHub 项目：<https://github.com/mwhmwhyyds-eng/malloc-memory-lab>
+
+## 项目内容
 
 案例与函数讲解视频是两个独立部分：案例用于操作与探索；video/ 中的动画工程独立讲解 malloc 的背景、机制与用法。视频使用生图素材、动态内存块、代码高亮、中文旁白与中文字幕。
 
@@ -86,7 +98,7 @@ C 源码正常分支实际调用 malloc 和 free，只读取已经初始化的�
 - [观看原理视频](https://mwhmwhyyds-eng.github.io/malloc-memory-lab/watch.html)
 - [打开交互案例](https://mwhmwhyyds-eng.github.io/malloc-memory-lab/lab.html)
 
-`docs/media/` 保存最终 MP4、封面与字幕。在线展示需完成 GitHub Pages 部署；发布状态以实际访问结果为准。
+`docs/media/` 保存最终 MP4、封面与字幕。GitHub Pages 已启用，视频可在线播放，交互案例可直接操作。提交 PDF 的第二页与末页显示可点击的完整网址。
 
 ## 技术依据
 
