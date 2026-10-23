@@ -32,3 +32,18 @@ npx remotion render src/index.ts MallocExplainer out/malloc.mp4 --codec=h264 --c
 所有图形均为教学示意。连续空间指程序可访问的连续虚拟地址范围，不宣称物理内存连续。可用块的定位动画不代表 glibc 的具体搜索算法、缓存、arena 或元数据布局；内核扩展是另一种可能路径。预算条与时延波形不使用测量数据。
 
 课程作者：何伟明 · 24电信4班。
+
+## 片头与片尾配乐
+
+最终发布版保留中文旁白和字幕，仅在开头约 12 秒与结尾约 14 秒加入轻配乐。机制、代码和错误示例部分不加背景音乐。
+
+“Easy Lemon (60 second)” — Kevin MacLeod (incompetech.com)，CC BY 4.0。
+来源：https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1200077
+许可：https://creativecommons.org/licenses/by/4.0/
+已截取、淡入淡出、调节音量并混音，详见 `public/music/ATTRIBUTION.md`。该音乐不受本项目其他源文件许可替代。
+
+先按上述命令导出旁白母版，再执行后期脚本生成发布版（需要 FFmpeg 和可用的等宽字体）：
+
+```sh
+python scripts/add_music.py out/malloc.mp4 out/malloc-with-music.mp4 --ffmpeg ffmpeg --font /path/to/monospace.ttf
+```
