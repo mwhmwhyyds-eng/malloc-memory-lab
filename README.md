@@ -1,5 +1,16 @@
 # malloc：一块内存的旅程
 
+## 最终提交文件
+
+以下为当前提交定稿。第二页采用无截图的文字导览，其余图文与配乐修订保留。
+
+PDF：https://mwhmwhyyds-eng.github.io/malloc-memory-lab/submission/malloc-coursework.pdf
+
+PPTX：https://mwhmwhyyds-eng.github.io/malloc-memory-lab/submission/malloc-coursework.pptx
+
+原理视频和交互案例继续使用下方原网址，视频为带片头、片尾配乐的最终版。
+
+
 《嵌入式 Linux 系统》个人课程作业的配套项目，包含函数原理动画、交互创意案例与 C 源码。完整课程讲解在提交的 PDF 中。
 
 ## 在线展示
